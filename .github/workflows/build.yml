@@ -1,0 +1,42 @@
+name: Gerar APK
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'ci/**', '.github/workflows/build.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '17' }
+      - name: Android SDK 34
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-34" "build-tools;34.0.0" > /dev/null
+      - name: Compilar
+        run: |
+          set -o pipefail
+          VN=$(cat app/VERSION_NAME) VC=$(cat app/VERSION_CODE) ci/build.sh 2>&1 | tee build.log || { grep -E '\.java:[0-9]+: error' build.log | head -20 | sed -E 's#^(.*\.java):([0-9]+): error: (.*)#::error file=\1,line=\2::\3#'; grep -E 'error' build.log | head -20 | sed 's/^/::error::/'; tail -12 build.log | tr '\n' ' ' | sed 's/^/::error::FIM DO LOG: /'; echo; exit 1; }
+      - name: Publicar versão
+        env: { GH_TOKEN: '${{ github.token }}' }
+        run: |
+          VN=$(cat app/VERSION_NAME)
+          gh release create "v$VN" app/build/Amp.apk --title "Amp $VN" --notes-file app/NOTAS.md || \
+          gh release upload "v$VN" app/build/Amp.apk --clobber
+      - name: APK no branch apk (pra buscar pelo git)
+        run: |
+          mkdir /tmp/apk && cp app/build/Amp.apk /tmp/apk/ && cp build.log /tmp/apk/
+          cd /tmp/apk && git init -q && git checkout -q -b apk
+          git config user.name build && git config user.email build@users.noreply.github.com
+          git add -A && git commit -q -m "Amp $(cat $GITHUB_WORKSPACE/app/VERSION_NAME) ($(cat $GITHUB_WORKSPACE/app/VERSION_CODE))"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" apk
+      - name: Log da falha no branch log
+        if: failure()
+        run: |
+          mkdir /tmp/lg && cp build.log /tmp/lg/ 2>/dev/null || echo "sem build.log" > /tmp/lg/build.log
+          cd /tmp/lg && git init -q && git checkout -q -b log
+          git config user.name build && git config user.email build@users.noreply.github.com
+          git add -A && git commit -q -m "log da falha"
+          git push -q -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" log
