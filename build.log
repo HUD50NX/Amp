@@ -1,0 +1,20 @@
+Note: src/br/hud/amp/AmpService.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+package: name='br.hud.amp' versionCode='1' versionName='1.0' platformBuildVersionName='14' platformBuildVersionCode='34' compileSdkVersion='34' compileSdkVersionCodename='14'
+sdkVersion:'26'
+targetSdkVersion:'30'
+uses-permission: name='android.permission.RECORD_AUDIO'
+uses-permission: name='android.permission.MODIFY_AUDIO_SETTINGS'
+uses-permission: name='android.permission.FOREGROUND_SERVICE'
+uses-permission: name='android.permission.FOREGROUND_SERVICE_MICROPHONE'
+uses-permission: name='android.permission.POST_NOTIFICATIONS'
+uses-permission: name='android.permission.WAKE_LOCK'
+application-label:'Amp'
+application-icon-160:'res/drawable/ic_launcher.xml'
+application: label='Amp' icon='res/drawable/ic_launcher.xml'
+-rw-r--r-- 1 runner runner 21040 Nov  1 16:53 build/Amp.apk
